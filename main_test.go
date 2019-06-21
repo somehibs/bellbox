@@ -24,7 +24,7 @@ func MalformedJsonCall(t *testing.T, path string) {
 }
 
 func TestGoodJson(t *testing.T) {
-	u := User{"test", "test", false}
+	u := User{User: "test", Password: "test"}
 	buf, e:= json.Marshal(&u)
 	if e != nil {
 		t.Errorf("couldn't marshal user: %+v\n", e)

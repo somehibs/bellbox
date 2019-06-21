@@ -3,7 +3,8 @@ package bellbox
 type User struct {
 	User string
 	Password string
-	Admin bool // ignored when submitted by clients
+	Admin bool `json:-` // ignored when submitted by clients
+	Token string `json:-` // ignored when submitted by clients
 }
 
 type Bell struct {

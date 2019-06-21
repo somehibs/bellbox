@@ -30,13 +30,13 @@ func GetConfig() Config {
 	if loaded {
 		return config
 	}
-	config := Config{
+	config = Config{
 		Db: DbConfig {
 			Host: "localhost",
 			Port: "5432",
 			DbName: "bellbox",
-		}
-		Push: PushConfig{}
+		},
+		Push: PushConfig{},
 	}
 	f, err := os.Open("config.json")
 	if err != nil {
