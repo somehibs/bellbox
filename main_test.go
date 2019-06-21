@@ -35,4 +35,10 @@ func TestGoodJson(t *testing.T) {
 	}
 	rb, e := ioutil.ReadAll(r.Body)
 	fmt.Println(string(rb))
+	r, e = http.Post("http://localhost:8080/user/login", "application/json", bytes.NewReader(buf))
+	if e != nil {
+		t.Errorf("Expected success, received: %+v\n", e)
+	}
+	rb, e = ioutil.ReadAll(r.Body)
+	fmt.Println(string(rb))
 }

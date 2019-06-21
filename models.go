@@ -1,10 +1,17 @@
 package bellbox
 
+import "time"
+
 type User struct {
 	User string
 	Password string
 	Admin bool `json:-` // ignored when submitted by clients
-	Token string `json:-` // ignored when submitted by clients
+}
+
+type UserToken struct {
+	User string
+	Token string
+	Timestamp time.Time `gorm:"type:time"`
 }
 
 type Bell struct {

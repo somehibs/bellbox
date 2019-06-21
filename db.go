@@ -18,6 +18,6 @@ func (c DbConfig) GetDb() *gorm.DB {
 	if err != nil {
 		panic("Could not make connection to postgres db with connection details: " + err.Error())
 	}
-	db.AutoMigrate(User{})
+	db.AutoMigrate(User{}, UserToken{})
 	return db
 }
