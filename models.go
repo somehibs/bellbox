@@ -39,7 +39,9 @@ type DeleteBellRequest struct {
 type Bellringer struct {
 	Target string
 	Name string
+	Token string
 	Urgent bool
+	RequestState int `json:-`
 }
 
 type FilterRequest struct {

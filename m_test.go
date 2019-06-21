@@ -61,6 +61,13 @@ func TestGoodJson(t *testing.T) {
 	r, e = Post(token.Token, "http://localhost:8080/bell/map", []byte{})
 	reply, _ := ioutil.ReadAll(r.Body)
 	fmt.Printf("map: %+v\n", string(reply))
+	sr := Bellringer{"test", "ringer test", "", false, 100}
+	srr, e := json.Marshal(&sr)
+
+	fmt.Printf("send: %+v\n", string(srr))
+	r, e = Post(token.Token, "http://localhost:8080/send/request", srr)
+	reply, _ = ioutil.ReadAll(r.Body)
+	fmt.Printf("map: %+v\n", string(reply))
 }
 
 func Post(token string, url string, body []byte) (*http.Response, error) {
