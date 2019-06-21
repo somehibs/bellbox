@@ -24,9 +24,20 @@ type Config struct {
 }
 
 var config Config
+var loaded bool
 
 func GetConfig() Config {
-	config := Config{}
+	if loaded {
+		return config
+	}
+	config := Config{
+		Db: DbConfig {
+			Host: "localhost",
+			Port: "5432",
+			DbName: "bellbox",
+		}
+		Push: PushConfig{}
+	}
 	f, err := os.Open("config.json")
 	if err != nil {
 		panic("Could not open config.json. Please create from example config. e: " + err.Error())
@@ -39,5 +50,6 @@ func GetConfig() Config {
 	if err != nil {
 		panic("Could not understand JSON Config object from config.json. e: " + err.Error())
 	}
+	loaded = true
 	return config
 }

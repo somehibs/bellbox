@@ -1,4 +1,4 @@
-package main
+package bellbox
 
 import (
 	"fmt"
@@ -8,21 +8,23 @@ import (
 	"bytes"
 	"io/ioutil"
 	"encoding/json"
-
-	"git.circuitco.de/self/bellbox/api"
 )
 
+func TestAllMalformedJson(t *testing.T) {
+	MalformedJsonCall(t, "user/new")
+	MalformedJsonCall(t, "user/login")
+}
 
-func TestMalformedJson(t *testing.T) {
+func MalformedJsonCall(t *testing.T, path string) {
 	buf := strings.NewReader("bitch")
-	_, e := http.Post("http://localhost:8080/user/new", "application/json", buf)
-	if e == nil {
-		t.Errorf("Expected error, received: %+v\n", e)
+	resp, _ := http.Post("http://localhost:8080/"+path, "application/json", buf)
+	if resp.StatusCode != http.StatusBadRequest {
+		t.Errorf("status does not match expected")
 	}
 }
 
 func TestGoodJson(t *testing.T) {
-	u := api.User{"test", "test", false}
+	u := User{"test", "test", false}
 	buf, e:= json.Marshal(&u)
 	if e != nil {
 		t.Errorf("couldn't marshal user: %+v\n", e)
