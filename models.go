@@ -16,10 +16,15 @@ type UserToken struct {
 
 type Bell struct {
 	Id string
+	User string `json:-` // ignore clients
 	Name string
 	Type string
 	Key string
-	Enabled bool
+	Enabled bool `json:-` // ignore clients
+}
+
+type UserReply struct {
+	Token string
 }
 
 type Id struct {

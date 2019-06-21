@@ -35,6 +35,29 @@ func ReplyToken(token string, c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"token": token})
 }
 
+type GinHandler func(*gin.Context)
+
+func HandleUserAuth(handler GinHandler) func(*gin.Context) {
+	// Check if the user is permitted to continue
+	return func(c *gin.Context) {
+		a := c.Request.Header.Get("Authorization")
+		if a == "" {
+			c.JSON(http.StatusForbidden, gin.H{"error": "auth header not present"})
+			return
+		}
+		db := GetConfig().Db.GetDb()
+		token := UserToken{Token: a}
+		db.Find(&token)
+		if token.User == "" {
+			c.JSON(http.StatusForbidden, gin.H{"error": "auth rejected"})
+			return
+
+		}
+		c.Request.Header.Set("UserId", token.User)
+		handler(c)
+	}
+}
+
 func HandleExistingUser(c *gin.Context) {
 	user := User{}
 	if err := c.ShouldBindJSON(&user); err != nil {
