@@ -56,7 +56,7 @@ bell types
 send
  - api.example.com/send/TARGET/
  - TARGET is an api target, defined below
- - body {"title": "This is a test notification", "body": "This is a notification body", "priority": "normal"}
+ - request {"title": "This is a test notification", "body": "This is a notification body", "priority": "normal"}
  - must include Authorization header defined in bell ringer authentication
 
 send priority
@@ -67,15 +67,19 @@ send priority
 
 bellringer authentication
  - api.example.com/auth/request
- - body {"target": "user@system", "clientId": "UUID", "urgent": false}
+ - request {"target": "user@system", "name": "Pizza Bell", "urgent": false}
+ - reply {"token": "bearer token"}
  - Authorization: Bearer ...
  - request credentials to access /send/ for a specific target
  - must include if the bellringer plans to use urgent, allowing users to reject ringers with too-high priorities
  - ringers without urgency will have their send priority capped to normal (until high is size safe)
+ - api.example.com/auth/disable
+ - disable the account for the given auth token. users will still see this as a valid sender
 
 bellringer acceptance
  - api.example.com/auth/map
- - reply {"pending": [{"clientId": "asdf"}], "accepted": []}
+ - request {"type": "group"} // user is the default
+ - reply {"pending": [{"name": "Pizza Bell", "urgent": false, "clientId": "asdf"}], "accepted": []}
  - get a map all of all granted or pending auth requests
  - api.example.com/auth/accept
  - api.example.com/auth/deny
