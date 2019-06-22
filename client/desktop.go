@@ -8,6 +8,7 @@ import (
 	"os"
 	"io/ioutil"
 	"github.com/gin-gonic/gin"
+	"github.com/gen2brain/beeep"
 	"git.circuitco.de/self/bellbox"
 )
 
@@ -104,9 +105,18 @@ func ListenForBells() {
 	r := gin.Default()
 	fmt.Printf("bells: %+v\n", r)
 	r.POST("/bell", func(c *gin.Context) {
-		fmt.Printf("req: %+v\n", c.Request)
+		BellRing(c)
 	})
 	r.Run(":2019")
+}
+
+func BellRing(c *gin.Context) {
+	msg := bellbox.Message{}
+	if err := c.ShouldBindJSON(&msg); err != nil {
+		// error parsing json
+		panic(err)
+	}
+	beeep.Notify(msg.Title, msg.Message, "")
 }
 
 func main() {
@@ -124,7 +134,7 @@ func main() {
 		if config.BellHost == "" {
 			panic("bellbox local host not found")
 		}
-		token := "N9vd742ZM8YEm8JQwAR4tLezEqMGvlL4PPdxT97HgX0KsnFAmkY760jZomu2gUB7"
+		token := "TrtZ6mT5jDXv5AEpLVFoGY32aNrbD41rA4C4dWz7WqzjKT6Uv0FF0H5f7kU4vbcU"
 		var err error
 		if config.CreateUser {
 			fmt.Println("User registration requested.")
