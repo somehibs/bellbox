@@ -55,33 +55,84 @@ func HandleSenderAuth(handler GinHandler) func(*gin.Context) {
 	}
 }
 
+var ValidPriorities = []string{"normal"}
+
+func ValidPriority(priority string) bool {
+	for _, valid := range ValidPriorities {
+		if priority == valid {
+			return true
+		}
+	}
+	return false
+}
+
 func HandleSend(c *gin.Context) {
-	user := User{}
-	if err := c.ShouldBindJSON(&user); err != nil {
+	msg := Message{}
+	if err := c.ShouldBindJSON(&msg); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "malformed json"})
 		return
 	}
-	if user.User == "" || user.Password == "" {
+	if msg.Target == "" || msg.Title == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "missing fields"})
-	}
-	// get a database, try add this person to it
-	var db = GetConfig().Db.GetDb()
-	db.Find(&user)
-	if user.User == "" {
-		c.JSON(http.StatusForbidden, gin.H{"error": "not exist or not match"})
 		return
 	}
-	// OK, make token
-	token := NewToken(user.User)
-	ReplyToken(token, c)
-}
-
-func HandleSendAuthorizations(c *gin.Context) {
-
+	if msg.Priority == "" {
+		msg.Priority = "normal"
+	}
+	if !ValidPriority(msg.Priority) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid priority"})
+		return
+	}
+	// get a database, try add this message to it
+	// trigger actual push mechanisms
+	var db = GetConfig().Db.GetDb()
+	db.Create(&msg)
 }
 
 func HandleSendAccept(c *gin.Context) {
+	HandleSendChange(c, true)
 }
 
 func HandleSendDeny(c *gin.Context) {
+	HandleSendChange(c, false)
+}
+
+func HandleSendChange(c *gin.Context, enable bool) {
+	ringer := Bellringer{}
+	if err := c.ShouldBindJSON(&ringer); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "malformed json"})
+		return
+	}
+	target := c.Request.Header.Get("UserId")
+	if ringer.Target != target {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "target does not match id"})
+		return
+	}
+	db := GetConfig().Db.GetDb()
+	db.Find(&ringer)
+	if ringer.Token == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ringer does not exist"})
+		return
+	}
+	if enable {
+		ringer.RequestState = 1
+	} else {
+		ringer.RequestState = 2
+	}
+	db.Table("bellringers").Where("target = ? AND name = ?", ringer.Target, ringer.Name).Update("request_state", ringer.RequestState)
+	rr := Bellringer{}
+	db.Find(&rr)
+	if rr.RequestState != ringer.RequestState {
+		c.JSON(http.StatusConflict, gin.H{"error": "ringer not in expected state after transaction"})
+		return
+	}
+	fmt.Printf("post update ringer: %+v\n", rr)
+}
+
+func HandleMapAuthorizations(c *gin.Context) {
+	user := c.Request.Header.Get("UserId")
+	ringerSlice := make([]Bellringer, 0)
+	db.Where("target = ?", user).Find(&ringerSlice)
+	fmt.Printf("ringers: %+v\n", ringerSlice)
+	c.JSON(http.StatusOK, &ringerSlice)
 }

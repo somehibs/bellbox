@@ -61,13 +61,54 @@ func TestGoodJson(t *testing.T) {
 	r, e = Post(token.Token, "http://localhost:8080/bell/map", []byte{})
 	reply, _ := ioutil.ReadAll(r.Body)
 	fmt.Printf("map: %+v\n", string(reply))
+
 	sr := Bellringer{"test", "ringer test", "", false, 100}
 	srr, e := json.Marshal(&sr)
-
-	fmt.Printf("send: %+v\n", string(srr))
+	//fmt.Printf("send: %+v\n", string(srr))
 	r, e = Post(token.Token, "http://localhost:8080/send/request", srr)
 	reply, _ = ioutil.ReadAll(r.Body)
-	fmt.Printf("map: %+v\n", string(reply))
+	bellringerRequest := UserReply{}
+	json.Unmarshal(reply, &bellringerRequest)
+	fmt.Printf("send response: %+v\n", bellringerRequest)
+
+	r, e = Post(token.Token, "http://localhost:8080/send/map", []byte{})
+	reply, _ = ioutil.ReadAll(r.Body)
+	ringerList := []Bellringer{}
+	e = json.Unmarshal(reply, &ringerList)
+	fmt.Printf("auth map: %+v\n", ringerList)
+
+	// test send
+	msg := Message{"test", "Test title", "Test body", "normal"}
+	SendTest(t, bellringerRequest.Token, msg, 403)
+
+	// deny, test send, undeny
+	buf, e = json.Marshal(ringerList[0])
+	if e != nil {
+		t.Errorf("error encoding json from response: %+v\n", e)
+	}
+	r, e = Post(token.Token, "http://localhost:8080/send/deny", buf)
+	fmt.Printf("deny response: %d\n", r.StatusCode)
+
+	SendTest(t, bellringerRequest.Token, msg, 403)
+
+	r, e = Post(token.Token, "http://localhost:8080/send/accept", buf)
+	fmt.Printf("accept response: %d\n", r.StatusCode)
+
+	SendTest(t, bellringerRequest.Token, msg, 200)
+}
+
+func SendTest(t *testing.T, token string, msg Message, statusCode int) {
+	buf, e := json.Marshal(msg)
+	if e != nil {
+		t.Errorf("Error marshalling: %+v\n", e)
+		return
+	}
+	r, e := Post(token, "http://localhost:8080/send", buf)
+	reply, _  := ioutil.ReadAll(r.Body)
+	fmt.Printf("send code: %d reply: %+v\n", r.StatusCode, string(reply))
+	if r.StatusCode != statusCode {
+		t.Errorf("Expected status code not present (%d vs %d)", statusCode, r.StatusCode)
+	}
 }
 
 func Post(token string, url string, body []byte) (*http.Response, error) {
@@ -75,6 +116,7 @@ func Post(token string, url string, body []byte) (*http.Response, error) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", token)
 	c := http.Client{}
-	return c.Do(req)
+	r, e := c.Do(req)
+	return r, e
 }
 

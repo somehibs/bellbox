@@ -2,10 +2,17 @@ package bellbox
 
 import "time"
 
+type Message struct {
+	Target string
+	Title string
+	Message string
+	Priority string
+}
+
 type User struct {
 	User string
 	Password string
-	Admin bool `json:-` // ignored when submitted by clients
+	Admin bool `json:"-"` // ignored when submitted by clients
 }
 
 type UserToken struct {
@@ -16,11 +23,11 @@ type UserToken struct {
 
 type Bell struct {
 	Id string
-	User string `json:-` // ignore clients
+	User string `json:"-"` // ignore clients
 	Name string
 	Type string
 	Key string
-	Enabled bool `json:-` // ignore clients
+	Enabled bool `json:"-"` // ignore clients
 }
 
 type UserReply struct {
@@ -39,9 +46,9 @@ type DeleteBellRequest struct {
 type Bellringer struct {
 	Target string
 	Name string
-	Token string
+	Token string `json:"-"`
 	Urgent bool
-	RequestState int `json:-`
+	RequestState int
 }
 
 type FilterRequest struct {

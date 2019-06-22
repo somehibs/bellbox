@@ -6,17 +6,22 @@ import (
 )
 
 func Route(router *gin.Engine) {
-	// TODO: HandleUserAuth(func(c*gin.Context))
 	// users
 	router.POST("/user/new", HandleNewUser)
 	router.POST("/user/login", HandleExistingUser)
 
+	// user bells
 	router.POST("/bell/new", HandleUserAuth(HandleNewBell))
 	router.POST("/bell/map", HandleUserAuth(HandleMapBells))
 
+	// send
 	router.POST("/send", HandleSenderAuth(HandleSend))
+
+	// sender auth
 	router.POST("/send/request", HandleSendRequest)
-	router.POST("/send/map", HandleUserAuth(HandleSendAuthorizations))
+	router.POST("/send/map", HandleUserAuth(HandleMapAuthorizations))
 	router.POST("/send/accept", HandleUserAuth(HandleSendAccept))
 	router.POST("/send/deny", HandleUserAuth(HandleSendDeny))
+
+	// messages
 }
