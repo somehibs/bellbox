@@ -8,6 +8,7 @@ fi
 cp bellbox.service /etc/systemd/system/
 cp bellbox /tmp/bellbox
 cp config.example.json /tmp/config.json
+cp production.environment /tmp/ENV
 
 mkdir /opt
 cd /opt
@@ -16,6 +17,7 @@ cd bellbox
 mkdir bin
 mv /tmp/bellbox bin/
 mv /tmp/config.json .
+mv /tmp/ENV .
 
 systemctl daemon-reload
 systemctl enable bellbox
