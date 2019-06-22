@@ -47,7 +47,7 @@ func TestGoodJson(t *testing.T) {
 	}
 	fmt.Printf("%+v\n", token)
 	badId := "wank"
-	newBell := Bell{Id: badId, User: badId, Name: "test bell", Type: "WEB", Key: "http://wank", Enabled: false}
+	newBell := Bell{Id: badId, User: badId, Name: "test bell", Type: "ANDROID", Key: "fake", Enabled: false}
 	if wb, e := json.Marshal(&newBell); e != nil {
 		t.Errorf("marshalling %+v failed\n", newBell)
 	} else {

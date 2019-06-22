@@ -15,7 +15,7 @@ type DbConfig struct {
 }
 
 type PushConfig struct {
-	// nothing yet
+	Fcm string
 }
 
 type Config struct {

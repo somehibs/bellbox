@@ -83,10 +83,26 @@ func HandleSend(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid priority"})
 		return
 	}
-	// get a database, try add this message to it
-	// trigger actual push mechanisms
+	if msg.Target != c.Request.Header.Get("Target") {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "message target does not match authentication"})
+		return
+	}
+	sendMsgImpl(msg)
+}
+
+func sendMsgImpl(msg Message) {
+	fmt.Printf("Sending message %+v\n", msg)
 	var db = GetConfig().Db.GetDb()
 	db.Create(&msg)
+	// send to target bells
+	bells := []Bell{}
+	db.Where("\"user\" = ?", msg.Target).Find(&bells)
+	for _, bell := range bells {
+		fmt.Printf("Bell: %+v\n", bell)
+		if bell.Type == "ANDROID" {
+			PushAndroid(bell.Key, msg)
+		}
+	}
 }
 
 func HandleSendAccept(c *gin.Context) {
