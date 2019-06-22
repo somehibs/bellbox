@@ -49,7 +49,7 @@ func HandleUserAuth(handler GinHandler) func(*gin.Context) {
 		fmt.Println(a)
 		db := GetConfig().Db.GetDb()
 		token := UserToken{}
-		db.Where("token = ?", a).Find(token)
+		db.Where("token = ?", a).Find(&token)
 		if token.User == "" {
 			c.JSON(http.StatusForbidden, gin.H{"error": "auth rejected"})
 			return

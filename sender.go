@@ -127,20 +127,21 @@ func HandleSendChange(c *gin.Context, enable bool) {
 		return
 	}
 	db := GetConfig().Db.GetDb()
-	db.Find(&ringer)
-	if ringer.Token == "" {
+	existingRinger := Bellringer{}
+	db.Where("target = ?", ringer.Target).Where("name = ?", ringer.Name).Find(&existingRinger)
+	if existingRinger.Token == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "ringer does not exist"})
 		return
 	}
 	if enable {
-		ringer.RequestState = 1
+		existingRinger.RequestState = 1
 	} else {
-		ringer.RequestState = 2
+		existingRinger.RequestState = 2
 	}
-	db.Table("bellringers").Where("target = ? AND name = ?", ringer.Target, ringer.Name).Update("request_state", ringer.RequestState)
+	db.Table("bellringers").Where("target = ? AND name = ?", existingRinger.Target, existingRinger.Name).Update("request_state", existingRinger.RequestState)
 	rr := Bellringer{}
-	db.Find(&rr)
-	if rr.RequestState != ringer.RequestState {
+	db.Where("target = ?", ringer.Target).Where("name = ?", ringer.Name).Find(&rr)
+	if rr.RequestState != existingRinger.RequestState {
 		c.JSON(http.StatusConflict, gin.H{"error": "ringer not in expected state after transaction"})
 		return
 	}
