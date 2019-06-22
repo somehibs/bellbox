@@ -1,3 +1,4 @@
 *.swp
 config.json
 bellbox
+bell_config.json

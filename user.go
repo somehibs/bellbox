@@ -13,17 +13,30 @@ func HandleNewUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "malformed json"})
 		return
 	}
+	if user.User == "" || user.Password == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "missing required user or password"})
+		return
+	}
 	// get a database, try add this person to it
-	var db = GetConfig().Db.GetDb()
-	username := User{User: user.User}
-	db.Find(&username)
-	if username.Password != "" {
+	if UserExists(user.User) {
 		c.JSON(http.StatusConflict, gin.H{"error": "already exists"})
 		return
 	}
+	var db = GetConfig().Db.GetDb()
 	db.Create(&user)
 	token := NewToken(user.User)
 	ReplyToken(token, c)
+}
+
+func UserExists(user string) bool {
+	fmt.Printf("Checking if user %s exists\n", user)
+	var db = GetConfig().Db.GetDb()
+	username := User{}
+	db.Where("\"user\" = ?", user).Find(&username)
+	if username.Password != "" {
+		return true
+	}
+	return false
 }
 
 func NewToken(user string) string {

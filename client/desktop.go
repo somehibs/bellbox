@@ -43,11 +43,12 @@ func ReadConfig() ClientConfig {
 }
 
 func SaveConfig(config ClientConfig) {
-	f, err := os.Open("bell_config.json")
+	os.Remove("bell_config.json")
+	f, err := os.Create("bell_config.json")
 	if err != nil {
 		panic("Could not open bell_config.json")
 	}
-	c, err := json.Marshal(config)
+	c, err := json.Marshal(&config)
 	if err != nil {
 		panic("Could not marshal into json: "+ err.Error())
 	}
@@ -70,12 +71,12 @@ func CreateBell(config ClientConfig, token string) (string, error) {
 	}
 	read, _ := ioutil.ReadAll(r.Body)
 	fmt.Printf("registration: %d resp: %s\n", r.StatusCode, read)
-	tok := bellbox.UserToken{}
+	tok := bellbox.Bell{}
 	e = json.Unmarshal(read, &tok)
 	if e != nil {
 		return "", e
 	}
-	return tok.Token, e
+	return tok.Id, e
 }
 
 
@@ -105,7 +106,7 @@ func ListenForBells() {
 	r.POST("/bell", func(c *gin.Context) {
 		fmt.Printf("req: %+v\n", c.Request)
 	})
-	r.Run()
+	r.Run(":2019")
 }
 
 func main() {
@@ -123,7 +124,7 @@ func main() {
 		if config.BellHost == "" {
 			panic("bellbox local host not found")
 		}
-		token := "Bi93gKjvmh4vPziMcXYwOPeAOPqikRiNzYRUBwOYD7MWpop3y5sLmsvLp2nRoPke"
+		token := "N9vd742ZM8YEm8JQwAR4tLezEqMGvlL4PPdxT97HgX0KsnFAmkY760jZomu2gUB7"
 		var err error
 		if config.CreateUser {
 			fmt.Println("User registration requested.")
@@ -135,11 +136,14 @@ func main() {
 			panic("Could not obtain token, bell cannot be registered, halting")
 		} else {
 			// We have a user token, create the bell
-			CreateBell(config, token)
+			bellToken, err := CreateBell(config, token)
+			if err != nil {
+				panic(err)
+			}
 			config.User = ""
 			config.Pass = ""
 			config.CreateUser = false
-			config.BellToken = token
+			config.BellToken = bellToken
 			SaveConfig(config)
 		}
 	} else {

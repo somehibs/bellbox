@@ -42,7 +42,7 @@ func LoginUser(user bellbox.User, create bool) string {
 
 func ListBell(token string) []bellbox.Bell {
 	bells := []bellbox.Bell{}
-	r, e := Post(token, "http://localhost:5384/bell/map", nil, &bells)
+	r, e := bellbox.Post(token, "http://localhost:5384/bell/map", nil, &bells)
 	reply, _ := ioutil.ReadAll(r.Body)
 	fmt.Printf("map str: %s\n", reply)
 	fmt.Printf("map: %+v\n", bells)
@@ -54,7 +54,7 @@ func ListBell(token string) []bellbox.Bell {
 
 func ListAuths(token string) []bellbox.Bellringer {
 	ringerList := []bellbox.Bellringer{}
-	_, e := Post(token, "http://localhost:5384/send/map", nil, &ringerList)
+	_, e := bellbox.Post(token, "http://localhost:5384/send/map", nil, &ringerList)
 	if e != nil {
 		panic(e.Error())
 	}
@@ -83,26 +83,15 @@ func ListAuths(token string) []bellbox.Bellringer {
 //	SendTest(t, bellringerRequest.Token, msg, 200)
 //}
 
-func Post(token string, url string, body interface{}, reply interface{}) (*http.Response, error) {
-	bbody, e := json.Marshal(body)
+func ChangeAuth(token string, ringer bellbox.Bellringer, allow bool) {
+	changeType := "deny"
+	if allow {
+		changeType = "accept"
+	}
+	_, e := bellbox.Post(token, "http://localhost:5384/send/"+changeType, &ringer, nil)
 	if e != nil {
 		panic(e)
 	}
-	req, _ := http.NewRequest("POST", url, bytes.NewReader(bbody))
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", token)
-	c := http.Client{}
-	r, e := c.Do(req)
-	read , _ := ioutil.ReadAll(r.Body)
-	if r.StatusCode != 200 {
-		fmt.Println("Status code did not match. Cannot continue.")
-		fmt.Println("Status code did not match. Cannot continue.")
-		fmt.Println("Status code did not match. Cannot continue.")
-		fmt.Println("Status code did not match. Cannot continue.")
-		panic(fmt.Sprintf("status code is %d", r.StatusCode))
-	}
-	e = json.Unmarshal(read, &reply)
-	return r, e
 }
 
 func main() {
@@ -110,6 +99,7 @@ func main() {
 	pflag := flag.String("pass", "", "Password for login/new operations")
 	mode := flag.String("mode", "", "Mode flag. Needs to be a) new b) login c) bells d) auths e) accept f) deny")
 	token := flag.String("token", "", "Token retrieved from user login.")
+	index := flag.Int("index", -1, "Index of auth map for use with accept/deny.")
 	flag.Parse()
 	if *mode == "" {
 		fmt.Println("You must set a valid mode to continue.")
@@ -126,6 +116,26 @@ func main() {
 	case "auths":
 		checkToken(*token)
 		ListAuths(*token)
+	case "accept":
+		if *index == -1 {
+			fmt.Println("no index")
+			return
+		}
+		auth := ListAuths(*token)
+		if len(auth) < *index-1 {
+			panic("index too high")
+		}
+		ChangeAuth(*token, auth[*index], true)
+	case "deny":
+		if *index == -1 {
+			fmt.Println("no index")
+			return
+		}
+		auth := ListAuths(*token)
+		if len(auth) < *index-1 {
+			panic("index too high")
+		}
+		ChangeAuth(*token, auth[*index], false)
 	}
 	fmt.Printf("Found flags: u: %s p: %s m: %s\n", *uflag, *pflag, *mode)
 }

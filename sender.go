@@ -2,8 +2,8 @@ package bellbox
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"net/http"
+	"github.com/gin-gonic/gin"
 )
 
 func HandleSendRequest(c *gin.Context) {
@@ -12,16 +12,25 @@ func HandleSendRequest(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "malformed json"})
 		return
 	}
+	if ringer.Target == "" || ringer.Name == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "missing required target or name"})
+		return
+	}
+	if !UserExists(ringer.Target) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "target does not exist"})
+		return
+	}
 	// get a database, try add this person to it
 	var db = GetConfig().Db.GetDb()
-	find := Bellringer{Target: ringer.Target, Name: ringer.Name}
-	db.Find(&find)
+	find := Bellringer{}
+	db.Where("target = ?", ringer.Target).Where("name = ?", ringer.Name).Find(&find)
 	if find.Token != "" {
 		c.JSON(http.StatusConflict, gin.H{"error": "sender already exists with same name", "detail": fmt.Sprintf("%+v\n", find)})
 		return
 	}
 	ringer.RequestState = 0
 	ringer.Token = GenToken()
+	fmt.Printf("ringer token %+v\n", ringer)
 	db.Create(&ringer)
 	ReplyToken(ringer.Token, c)
 }
