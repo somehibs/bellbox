@@ -69,8 +69,13 @@ func HandleExistingUser(c *gin.Context) {
 	}
 	// get a database, try add this person to it
 	var db = GetConfig().Db.GetDb()
-	db.Find(&user)
-	if user.User == "" {
+	uexist := User{User:user.User}
+	db.Find(&uexist)
+	if uexist.Password == "" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "not exist or not match"})
+		return
+	}
+	if user.Password != uexist.Password {
 		c.JSON(http.StatusForbidden, gin.H{"error": "not exist or not match"})
 		return
 	}

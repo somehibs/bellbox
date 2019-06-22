@@ -26,7 +26,7 @@ func LoginUser(user bellbox.User, create bool) string {
 	if create {
 		path = "new"
 	}
-	r, e := http.Post("http://localhost:8080/user/"+path, "application/json", bytes.NewReader(buf))
+	r, e := http.Post("http://localhost:5384/user/"+path, "application/json", bytes.NewReader(buf))
 	if e != nil {
 		Errorf("Expected success, received: %+v\n", e)
 	}
@@ -41,7 +41,7 @@ func LoginUser(user bellbox.User, create bool) string {
 }
 
 func ListBell(token string) []bellbox.Bell {
-	r, e := Post(token, "http://localhost:8080/bell/map", []byte{})
+	r, e := Post(token, "http://localhost:5384/bell/map", []byte{})
 	reply, _ := ioutil.ReadAll(r.Body)
 	bells := []bellbox.Bell{}
 	fmt.Printf("map str: %s\n", reply)
@@ -54,7 +54,7 @@ func ListBell(token string) []bellbox.Bell {
 }
 
 func ListAuthMap(token string) []bellbox.Bellringer {
-	r, e := Post(token, "http://localhost:8080/send/map", []byte{})
+	r, e := Post(token, "http://localhost:5384/send/map", []byte{})
 	if e != nil {
 		panic(e.Error())
 	}
@@ -78,12 +78,12 @@ func ListAuthMap(token string) []bellbox.Bellringer {
 //	if e != nil {
 //		t.Errorf("error encoding json from response: %+v\n", e)
 //	}
-//	r, e = Post(token.Token, "http://localhost:8080/send/deny", buf)
+//	r, e = Post(token.Token, "http://localhost:5384/send/deny", buf)
 //	fmt.Printf("deny response: %d\n", r.StatusCode)
 //
 //	SendTest(t, bellringerRequest.Token, msg, 403)
 //
-//	r, e = Post(token.Token, "http://localhost:8080/send/accept", buf)
+//	r, e = Post(token.Token, "http://localhost:5384/send/accept", buf)
 //	fmt.Printf("accept response: %d\n", r.StatusCode)
 //
 //	SendTest(t, bellringerRequest.Token, msg, 200)
@@ -102,6 +102,25 @@ func main() {
 	uflag := flag.String("user", "", "Username for login/new operations")
 	pflag := flag.String("pass", "", "Password for login/new operations")
 	mode := flag.String("mode", "", "Mode flag. Needs to be a) new b) login c) bells d) auths e) accept f) deny")
+	token := flag.String("token", "", "Token retrieved from user login.")
 	flag.Parse()
-	fmt.Printf("Found flags: u: %s p: %s\n", *uflag, *pflag)
+	if *mode == "" {
+		fmt.Println("You must set a valid mode to continue.")
+		return
+	}
+	switch *mode {
+	case "new":
+		LoginUser(bellbox.User{User: *uflag, Password: *pflag}, true)
+	case "login":
+		LoginUser(bellbox.User{User: *uflag, Password: *pflag}, false)
+	case "bells":
+		checkToken(*token)
+		ListBell(*token)
+	}
+	fmt.Printf("Found flags: u: %s p: %s m: %s\n", *uflag, *pflag, *mode)
+}
+func checkToken(token string) {
+	if token == "" {
+		panic("Token not set for a mode that requires tokens.")
+	}
 }
