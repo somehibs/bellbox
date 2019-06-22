@@ -1,0 +1,18 @@
+[Unit]
+Description=Bellbox instance
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+StandardOutput=syslog+console
+WorkingDirectory=/opt/bellbox/
+ExecStart/opt/bellbox/bin/bellbox
+Type=simple
+User=bellbox
+Group=bellbox
+Restart=always
+RestartSec=5
+UMask=0027
+
+[Install]
+WantedBy=multi-user.target
