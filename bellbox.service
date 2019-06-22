@@ -5,11 +5,12 @@ After=network-online.target
 
 [Service]
 StandardOutput=syslog+console
+#EnvironmentFile=/opt/bellbox/ENVIRONMENT
 WorkingDirectory=/opt/bellbox/
 ExecStart=/opt/bellbox/bin/bellbox
 Type=simple
-User=bellbox
-Group=bellbox
+User=shroud
+Group=shroud
 Restart=always
 RestartSec=5
 UMask=0027
