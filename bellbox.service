@@ -6,7 +6,7 @@ After=network-online.target
 [Service]
 StandardOutput=syslog+console
 WorkingDirectory=/opt/bellbox/
-ExecStart/opt/bellbox/bin/bellbox
+ExecStart=/opt/bellbox/bin/bellbox
 Type=simple
 User=bellbox
 Group=bellbox

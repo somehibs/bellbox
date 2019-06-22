@@ -1,12 +1,12 @@
 #!/bin/bash
 
-go build -o bellbox cli/main.go
+#go build -o bellbox cli/main.go
 if [[ $? -ne 0 ]]; then
 	echo "build failed"
 	exit 1
 fi
 cp bellbox.service /etc/systemd/system/
-mv bellbox /tmp/bellbox
+cp bellbox /tmp/bellbox
 cp config.example.json /tmp/config.json
 
 mkdir /opt
