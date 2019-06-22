@@ -24,6 +24,7 @@ func HandleNewBell(c *gin.Context) {
 	bell.User = c.Request.Header.Get("UserId")
 	bell.Enabled = true
 	db.Create(&bell)
+	c.JSON(http.StatusOK, bell)
 }
 
 func HandleMapBells(c *gin.Context) {

@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"net/http"
 	"encoding/json"
-	"os"
 	"io/ioutil"
 	"github.com/gin-gonic/gin"
 	"git.circuitco.de/self/bellbox"
