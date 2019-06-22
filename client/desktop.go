@@ -114,8 +114,8 @@ func main() {
 	fmt.Printf("Config: %+v\n", config)
 	if config.BellToken == "" {
 		fmt.Println("No bell token found. Attempting creation.")
-		if config.User == "" || config.Pass == "" {
-			fmt.Println("remember to add this back in")//panic("User credentials not present, cannot create bell.")
+		if false {//config.User == "" {//|| config.Pass == "" {
+			panic("User credentials not present, cannot create bell.")
 		}
 		if config.Url == "" {
 			panic("bellbox host not found")
@@ -123,7 +123,7 @@ func main() {
 		if config.BellHost == "" {
 			panic("bellbox local host not found")
 		}
-		token := "pMPayPSLYT8I0ZtwCb6dLh4A6bauOCIH8y3ANKy43PvNxOUjYWDzyZZZyoBc7SCy"
+		token := "Bi93gKjvmh4vPziMcXYwOPeAOPqikRiNzYRUBwOYD7MWpop3y5sLmsvLp2nRoPke"
 		var err error
 		if config.CreateUser {
 			fmt.Println("User registration requested.")

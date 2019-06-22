@@ -41,11 +41,10 @@ func LoginUser(user bellbox.User, create bool) string {
 }
 
 func ListBell(token string) []bellbox.Bell {
-	r, e := Post(token, "http://localhost:5384/bell/map", []byte{})
-	reply, _ := ioutil.ReadAll(r.Body)
 	bells := []bellbox.Bell{}
+	r, e := Post(token, "http://localhost:5384/bell/map", nil, &bells)
+	reply, _ := ioutil.ReadAll(r.Body)
 	fmt.Printf("map str: %s\n", reply)
-	e = json.Unmarshal(reply, &bells)
 	fmt.Printf("map: %+v\n", bells)
 	if e != nil {
 		panic("could not list bells")
@@ -54,13 +53,8 @@ func ListBell(token string) []bellbox.Bell {
 }
 
 func ListAuths(token string) []bellbox.Bellringer {
-	r, e := Post(token, "http://localhost:5384/send/map", []byte{})
-	if e != nil {
-		panic(e.Error())
-	}
-	reply, _ := ioutil.ReadAll(r.Body)
 	ringerList := []bellbox.Bellringer{}
-	e = json.Unmarshal(reply, &ringerList)
+	_, e := Post(token, "http://localhost:5384/send/map", nil, &ringerList)
 	if e != nil {
 		panic(e.Error())
 	}
@@ -89,12 +83,25 @@ func ListAuths(token string) []bellbox.Bellringer {
 //	SendTest(t, bellringerRequest.Token, msg, 200)
 //}
 
-func Post(token string, url string, body []byte) (*http.Response, error) {
-	req, _ := http.NewRequest("POST", url, bytes.NewReader(body))
+func Post(token string, url string, body interface{}, reply interface{}) (*http.Response, error) {
+	bbody, e := json.Marshal(body)
+	if e != nil {
+		panic(e)
+	}
+	req, _ := http.NewRequest("POST", url, bytes.NewReader(bbody))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", token)
 	c := http.Client{}
 	r, e := c.Do(req)
+	read , _ := ioutil.ReadAll(r.Body)
+	if r.StatusCode != 200 {
+		fmt.Println("Status code did not match. Cannot continue.")
+		fmt.Println("Status code did not match. Cannot continue.")
+		fmt.Println("Status code did not match. Cannot continue.")
+		fmt.Println("Status code did not match. Cannot continue.")
+		panic(fmt.Sprintf("status code is %d", r.StatusCode))
+	}
+	e = json.Unmarshal(read, &reply)
 	return r, e
 }
 
