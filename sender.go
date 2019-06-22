@@ -35,8 +35,8 @@ func HandleSenderAuth(handler GinHandler) func(*gin.Context) {
 			return
 		}
 		db := GetConfig().Db.GetDb()
-		token := Bellringer{Token: a}
-		db.Find(&token)
+		token := Bellringer{}
+		db.Where("token = ?", a).Find(&token)
 		if token.Name == "" {
 			c.JSON(http.StatusForbidden, gin.H{"error": "auth rejected"})
 			return

@@ -53,7 +53,7 @@ func ListBell(token string) []bellbox.Bell {
 	return bells
 }
 
-func ListAuthMap(token string) []bellbox.Bellringer {
+func ListAuths(token string) []bellbox.Bellringer {
 	r, e := Post(token, "http://localhost:5384/send/map", []byte{})
 	if e != nil {
 		panic(e.Error())
@@ -116,6 +116,9 @@ func main() {
 	case "bells":
 		checkToken(*token)
 		ListBell(*token)
+	case "auths":
+		checkToken(*token)
+		ListAuths(*token)
 	}
 	fmt.Printf("Found flags: u: %s p: %s m: %s\n", *uflag, *pflag, *mode)
 }

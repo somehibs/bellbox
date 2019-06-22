@@ -1,6 +1,7 @@
 package bellbox
 
 import (
+	"fmt"
 	"time"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -45,14 +46,15 @@ func HandleUserAuth(handler GinHandler) func(*gin.Context) {
 			c.JSON(http.StatusForbidden, gin.H{"error": "auth header not present"})
 			return
 		}
+		fmt.Println(a)
 		db := GetConfig().Db.GetDb()
-		token := UserToken{Token: a}
-		db.Find(&token)
+		token := UserToken{}
+		db.Where("token = ?", a).Find(token)
 		if token.User == "" {
 			c.JSON(http.StatusForbidden, gin.H{"error": "auth rejected"})
 			return
-
 		}
+		fmt.Printf("Found user: %+v\n", token)
 		c.Request.Header.Set("UserId", token.User)
 		handler(c)
 	}

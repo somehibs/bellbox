@@ -123,7 +123,7 @@ func main() {
 		if config.BellHost == "" {
 			panic("bellbox local host not found")
 		}
-		token := "V0M2OTSIrkyycKinlEGPBUw4Fg9irIJjswZI9aSmfT20IPJFqhkninJSEtm2WIA3"
+		token := "pMPayPSLYT8I0ZtwCb6dLh4A6bauOCIH8y3ANKy43PvNxOUjYWDzyZZZyoBc7SCy"
 		var err error
 		if config.CreateUser {
 			fmt.Println("User registration requested.")
