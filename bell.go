@@ -15,7 +15,7 @@ func HandleNewBell(c *gin.Context) {
 	// get a database, try add this person to it
 	var db = GetConfig().Db.GetDb()
 	bellNameCheck := Bell{Name: bell.Name, User: bell.User}
-	db.Find(&bellNameCheck)
+	db.Where("name = ?", bell.Name).Where("user = ?", bell.User).Find(&bellNameCheck)
 	if bellNameCheck.Id != "" {
 		c.JSON(http.StatusConflict, gin.H{"error": "already exists"})
 		return

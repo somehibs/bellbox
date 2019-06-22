@@ -101,6 +101,8 @@ func sendMsgImpl(msg Message) {
 		fmt.Printf("Bell: %+v\n", bell)
 		if bell.Type == "ANDROID" {
 			PushAndroid(bell.Key, msg)
+		} else if bell.Type == "WEB" {
+			PushWeb(bell.Key, msg)
 		}
 	}
 }

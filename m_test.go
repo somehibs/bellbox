@@ -58,6 +58,15 @@ func TestGoodJson(t *testing.T) {
 			fmt.Printf("new bell response: %+v\n", string(reply))
 		}
 	}
+	newBell = Bell{Id: badId, User: badId, Name: "web test bell", Type: "WEB", Key: "http://localhost:90210/bell", Enabled: false}
+	wb, e := json.Marshal(&newBell)
+	if e != nil {
+		t.Errorf("marshalling %+v failed\n", newBell)
+	}
+	if r, e := Post(token.Token, "http://localhost:8080/bell/new", wb); e != nil || r.StatusCode != 200 {
+		t.Errorf("creating bell failed %s", e)
+	}
+
 	r, e = Post(token.Token, "http://localhost:8080/bell/map", []byte{})
 	reply, _ := ioutil.ReadAll(r.Body)
 	fmt.Printf("map: %+v\n", string(reply))
