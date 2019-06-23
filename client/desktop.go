@@ -20,11 +20,11 @@ type ClientConfig struct {
 	// bell specific token for use at some point
 	BellToken string
 	// server-accessible host
-	BellHost string
+	Local string//Local string
+	// server
+	Remote string //url
 	// used to identify the bell to the user
 	Name string
-	// server
-	Url string
 }
 
 func ReadConfig() ClientConfig {
@@ -59,11 +59,11 @@ func SaveConfig(config ClientConfig) {
 	f.Close()
 }
 func CreateBell(config ClientConfig, token string) (string, error) {
-	req, e := json.Marshal(bellbox.Bell{Name:config.Name, Key: config.BellHost, Type: "WEB"})
+	req, e := json.Marshal(bellbox.Bell{Name:config.Name, Key: config.Local, Type: "WEB"})
 	if e != nil {
 		return "", e
 	}
-	re, e := http.NewRequest("POST", config.Url+"bell/new", bytes.NewReader(req))
+	re, e := http.NewRequest("POST", config.Remote+"bell/new", bytes.NewReader(req))
 	re.Header.Set("Authorization", token)
 	cl := http.Client{}
 	r, e := cl.Do(re)
@@ -107,7 +107,7 @@ func ListenForBells() {
 	r.POST("/bell", func(c *gin.Context) {
 		BellRing(c)
 	})
-	r.Run(":2019")
+	r.Run(":9696")
 }
 
 func BellRing(c *gin.Context) {
@@ -128,17 +128,17 @@ func main() {
 		if false {//config.User == "" {//|| config.Pass == "" {
 			panic("User credentials not present, cannot create bell.")
 		}
-		if config.Url == "" {
+		if config.Remote == "" {
 			panic("bellbox host not found")
 		}
-		if config.BellHost == "" {
+		if config.Local == "" {
 			panic("bellbox local host not found")
 		}
-		token := "TrtZ6mT5jDXv5AEpLVFoGY32aNrbD41rA4C4dWz7WqzjKT6Uv0FF0H5f7kU4vbcU"
+		token := "HQKW5ANlTbV3IILQ5BmybC32x0ZE7Szxjfg8KQTmfmPMbIvb6ujeBRK3Lkq3ieGQ"
 		var err error
 		if config.CreateUser {
 			fmt.Println("User registration requested.")
-			if token, err = CreateUser(config.Url, config.User, config.Pass); err != nil {
+			if token, err = CreateUser(config.Remote, config.User, config.Pass); err != nil {
 				panic("Could not create user: " + err.Error())
 			}
 		}

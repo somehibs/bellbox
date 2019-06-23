@@ -11,6 +11,8 @@ import (
 	"flag"
 )
 
+var host = "http://circuitco.de:5384/"
+
 func Errorf(str string, kwarg... interface{}) {
 	fmt.Printf(str, kwarg)
 	panic("")
@@ -26,7 +28,7 @@ func LoginUser(user bellbox.User, create bool) string {
 	if create {
 		path = "new"
 	}
-	r, e := http.Post("http://localhost:5384/user/"+path, "application/json", bytes.NewReader(buf))
+	r, e := http.Post(host+"/user/"+path, "application/json", bytes.NewReader(buf))
 	if e != nil {
 		Errorf("Expected success, received: %+v\n", e)
 	}
@@ -42,7 +44,7 @@ func LoginUser(user bellbox.User, create bool) string {
 
 func ListBell(token string) []bellbox.Bell {
 	bells := []bellbox.Bell{}
-	r, e := bellbox.Post(token, "http://localhost:5384/bell/map", nil, &bells)
+	r, e := bellbox.Post(token, host+"/bell/map", nil, &bells)
 	reply, _ := ioutil.ReadAll(r.Body)
 	fmt.Printf("map str: %s\n", reply)
 	fmt.Printf("map: %+v\n", bells)
@@ -54,7 +56,7 @@ func ListBell(token string) []bellbox.Bell {
 
 func ListAuths(token string) []bellbox.Bellringer {
 	ringerList := []bellbox.Bellringer{}
-	_, e := bellbox.Post(token, "http://localhost:5384/send/map", nil, &ringerList)
+	_, e := bellbox.Post(token, host+"/send/map", nil, &ringerList)
 	if e != nil {
 		panic(e.Error())
 	}
@@ -88,7 +90,7 @@ func ChangeAuth(token string, ringer bellbox.Bellringer, allow bool) {
 	if allow {
 		changeType = "accept"
 	}
-	_, e := bellbox.Post(token, "http://localhost:5384/send/"+changeType, &ringer, nil)
+	_, e := bellbox.Post(token, host+"/send/"+changeType, &ringer, nil)
 	if e != nil {
 		panic(e)
 	}
