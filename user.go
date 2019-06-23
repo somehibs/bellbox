@@ -81,11 +81,16 @@ func HandleExistingUser(c *gin.Context) {
 	}
 	if user.User == "" || user.Password == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "missing fields"})
+		return
+	}
+	if !UserExists(user.User) {
+		c.JSON(http.StatusForbidden, gin.H{"error": "not exist or not match"})
+		return
 	}
 	// get a database, try add this person to it
 	var db = GetConfig().Db.GetDb()
-	uexist := User{User:user.User}
-	db.Find(&uexist)
+	uexist := User{}
+	db.Where("\"user\" = ?", user.User).Find(&uexist)
 	if uexist.Password == "" {
 		c.JSON(http.StatusForbidden, gin.H{"error": "not exist or not match"})
 		return

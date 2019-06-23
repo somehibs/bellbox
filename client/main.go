@@ -11,7 +11,6 @@ import (
 	"flag"
 )
 
-var host = "http://circuitco.de:5384/"
 
 func Errorf(str string, kwarg... interface{}) {
 	fmt.Printf(str, kwarg)
@@ -96,9 +95,13 @@ func ChangeAuth(token string, ringer bellbox.Bellringer, allow bool) {
 	}
 }
 
+var host = ""
+
 func main() {
 	uflag := flag.String("user", "", "Username for login/new operations")
 	pflag := flag.String("pass", "", "Password for login/new operations")
+	hostFlag := flag.String("host", "localhost", "Host for all API interactions")
+	portFlag := flag.Int("port", 5384, "Port for all API interactions")
 	mode := flag.String("mode", "", "Mode flag. Needs to be a) new b) login c) bells d) auths e) accept f) deny")
 	token := flag.String("token", "", "Token retrieved from user login.")
 	index := flag.Int("index", -1, "Index of auth map for use with accept/deny.")
@@ -107,6 +110,9 @@ func main() {
 		fmt.Println("You must set a valid mode to continue.")
 		return
 	}
+
+	host = fmt.Sprintf("http://%s:%d/", *hostFlag, *portFlag)
+
 	switch *mode {
 	case "new":
 		LoginUser(bellbox.User{User: *uflag, Password: *pflag}, true)
