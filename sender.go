@@ -3,6 +3,7 @@ package bellbox
 import (
 	"fmt"
 	"net/http"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -47,7 +48,7 @@ func HandleSenderAuth(handler GinHandler) func(*gin.Context) {
 		token := Bellringer{}
 		db.Where("token = ?", a).Find(&token)
 		if token.Name == "" {
-			c.JSON(http.StatusForbidden, gin.H{"error": "auth rejected"})
+			c.JSON(http.StatusForbidden, gin.H{"error": "auth does not exist"})
 			return
 		} else if token.RequestState == 0 {
 			c.JSON(http.StatusForbidden, gin.H{"error": "auth pending"})
@@ -97,6 +98,7 @@ func HandleSend(c *gin.Context) {
 		return
 	}
 	sendMsgImpl(msg)
+	c.JSON(http.StatusOK, gin.H{})
 }
 
 func sendMsgImpl(msg Message) {
@@ -107,11 +109,10 @@ func sendMsgImpl(msg Message) {
 	bells := []Bell{}
 	db.Where("\"user\" = ?", msg.Target).Find(&bells)
 	for _, bell := range bells {
-		fmt.Printf("Bell: %+v\n", bell)
 		if bell.Type == "ANDROID" {
-			PushAndroid(bell.Key, msg)
+			go PushAndroid(bell.Key, msg)
 		} else if bell.Type == "WEB" {
-			PushWeb(bell.Key, msg)
+			go PushWeb(bell.Key, msg)
 		}
 	}
 }
