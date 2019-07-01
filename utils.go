@@ -22,6 +22,9 @@ func Post(token string, url string, body interface{}, reply interface{}) (*http.
 	req.Header.Set("Authorization", token)
 	c := http.Client{}
 	r, e := c.Do(req)
+	if e != nil {
+		return nil, e
+	}
 	read , _ := ioutil.ReadAll(r.Body)
 	if r.StatusCode != 200 {
 		fmt.Println("Status code did not match. Cannot continue.")
