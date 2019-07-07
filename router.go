@@ -13,7 +13,7 @@ func Route(router *gin.Engine) {
 	// user bells
 	router.POST("/bell/new", HandleUserAuth(HandleNewBell))
 	router.GET("/bell/map", HandleUserAuth(HandleMapBells))
-
+	router.POST("/bell/delete", HandleUserAuth(HandleDeleteBell))
 	// send
 	router.POST("/send", HandleSenderAuth(HandleSend))
 

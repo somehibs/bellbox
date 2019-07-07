@@ -32,6 +32,29 @@ func HandleNewBell(c *gin.Context) {
 	c.JSON(http.StatusOK, bell)
 }
 
+func HandleDeleteBell(c *gin.Context) {
+	authedUser := c.Request.Header.Get("UserId")
+	bell := Bell{}
+	if err := c.ShouldBindJSON(&bell); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "malformed json"})
+		return
+	}
+	if bell.Key == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "missing key"})
+		return
+	}
+	// get a database, try delete that bell
+	var db = GetConfig().Db.GetDb()
+	bellCheck := Bell{}
+	db.Where("name = ?", bell.Name).Where("key = ?", bell.Key).Where("\"user\" = ?", authedUser).Find(&bellCheck)
+	if bellCheck.Id == "" {
+		c.JSON(http.StatusConflict, gin.H{"error": "bell does not exist"})
+		return
+	}
+	db.Where("id = ?", bellCheck.Id).Delete(Bell{})
+	c.JSON(http.StatusOK, gin.H{})
+}
+
 func HandleMapBells(c *gin.Context) {
 	bellSlice := make([]Bell, 0)
 	db.Find(&bellSlice)
