@@ -7,6 +7,7 @@ type Message struct {
 	Title string
 	Message string
 	Priority string
+	Sender string
 }
 
 type User struct {

@@ -16,6 +16,7 @@ func PushAndroid(token string, msg Message) {
 	if msg.Message != "" {
 		req += `,"body": "`+msg.Message+`"`
 	}
+	req += `,"sender": `+msg.Sender+`"`
 	req += `}}`
 	r, err := http.NewRequest("POST", "https://fcm.googleapis.com/fcm/send", strings.NewReader(req))
 	if err != nil {

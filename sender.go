@@ -3,9 +3,12 @@ package bellbox
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
+
+var SYSTEM_SENDER = "System"
 
 func HandleSendRequest(c *gin.Context) {
 	ringer := Bellringer{}
@@ -21,6 +24,10 @@ func HandleSendRequest(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "target does not exist"})
 		return
 	}
+	if strings.Compare(SYSTEM_SENDER, ringer.Name) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "name must not be "+SYSTEM_SENDER})
+		return
+	}
 	// get a database, try add this person to it
 	var db = GetConfig().Db.GetDb()
 	find := Bellringer{}
@@ -33,7 +40,7 @@ func HandleSendRequest(c *gin.Context) {
 	ringer.Token = GenToken()
 	fmt.Printf("ringer token %+v\n", ringer)
 	db.Create(&ringer)
-	sendMsgImpl(Message{Target: ringer.Target, Title: "New bellringer request", Message: fmt.Sprintf("%s wants to send you notifications", ringer.Name)})
+	sendMsgImpl(Message{Target: ringer.Target, Title: "New bellringer request", Message: fmt.Sprintf("%s wants to send you notifications", ringer.Name), Sender: SYSTEM_SENDER})
 	ReplyToken(ringer.Token, c)
 }
 
@@ -59,6 +66,7 @@ func HandleSenderAuth(handler GinHandler) func(*gin.Context) {
 			return
 		}
 		c.Request.Header.Set("Target", token.Target)
+		c.Request.Header.Set("Sender", token.Name)
 		if token.Urgent {
 			c.Request.Header.Set("Urgent", "true")
 		}
@@ -98,6 +106,7 @@ func HandleSend(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "message target does not match authentication"})
 		return
 	}
+	msg.Sender = c.Request.Header.Get("Sender")
 	sendMsgImpl(msg)
 	c.JSON(http.StatusOK, gin.H{})
 }
