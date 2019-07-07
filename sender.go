@@ -40,8 +40,13 @@ func HandleSendRequest(c *gin.Context) {
 	ringer.Token = GenToken()
 	fmt.Printf("ringer token %+v\n", ringer)
 	db.Create(&ringer)
-	sendMsgImpl(Message{Target: ringer.Target, Title: "New bellringer request", Message: fmt.Sprintf("%s wants to send you notifications", ringer.Name), Sender: SYSTEM_SENDER})
+	systemMessage(ringer.Target, "New bellringer request", fmt.Sprintf("%s wants to send you notifications", ringer.Name))
 	ReplyToken(ringer.Token, c)
+}
+
+func systemMessage(target, title, msg string) {
+	// send message
+	sendMsgImpl(Message{Target: target, Title: title, Message: msg, Sender: SYSTEM_SENDER})
 }
 
 func HandleSenderAuth(handler GinHandler) func(*gin.Context) {

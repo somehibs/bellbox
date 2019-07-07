@@ -19,7 +19,7 @@ func Route(router *gin.Engine) {
 
 	// sender auth
 	router.POST("/send/request", HandleSendRequest)
-	router.POST("/send/map", HandleUserAuth(HandleMapAuthorizations))
+	router.GET("/send/map", HandleUserAuth(HandleMapAuthorizations))
 	router.POST("/send/accept", HandleUserAuth(HandleSendAccept))
 	router.POST("/send/deny", HandleUserAuth(HandleSendDeny))
 
