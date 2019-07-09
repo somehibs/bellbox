@@ -11,11 +11,12 @@ func PushAndroid(token string, msg Message) {
 	if GetConfig().Push.Fcm == "" {
 		panic("Cannot continue - FCM key missing for Android push")
 	}
-	req := `{"to":"`+token+`", "data":{`
-	req += `"title": "`+msg.Title+`"`
+	req := `{"to":"` + token + `", "data":{`
+	req += `"title": "` + msg.Title + `"`
 	if msg.Message != "" {
-		req += `,"body": "`+msg.Message+`"`
+		req += `,"body": "` + msg.Message + `"`
 	}
+	req += `,"sender": "` + msg.Sender + `"`
 	req += `}}`
 	r, err := http.NewRequest("POST", "https://fcm.googleapis.com/fcm/send", strings.NewReader(req))
 	if err != nil {

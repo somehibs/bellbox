@@ -12,15 +12,15 @@ func Route(router *gin.Engine) {
 
 	// user bells
 	router.POST("/bell/new", HandleUserAuth(HandleNewBell))
-	//router.POST("/bell/delete", HandleUserAuth(HandleDeleteBell))
-	router.POST("/bell/map", HandleUserAuth(HandleMapBells))
+	router.GET("/bell/map", HandleUserAuth(HandleMapBells))
+	router.POST("/bell/delete", HandleUserAuth(HandleDeleteBell))
 
 	// send
 	router.POST("/send", HandleSenderAuth(HandleSend))
 
 	// sender auth
 	router.POST("/send/request", HandleSendRequest)
-	router.POST("/send/map", HandleUserAuth(HandleMapAuthorizations))
+	router.GET("/send/map", HandleUserAuth(HandleMapAuthorizations))
 	router.POST("/send/accept", HandleUserAuth(HandleSendAccept))
 	router.POST("/send/deny", HandleUserAuth(HandleSendDeny))
 

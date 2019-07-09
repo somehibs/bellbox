@@ -3,8 +3,12 @@ package bellbox
 import (
 	"fmt"
 	"net/http"
+	"strings"
+
 	"github.com/gin-gonic/gin"
 )
+
+var SYSTEM_SENDER = "System"
 
 func HandleSendRequest(c *gin.Context) {
 	ringer := Bellringer{}
@@ -20,6 +24,10 @@ func HandleSendRequest(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "target does not exist"})
 		return
 	}
+	if strings.Compare(SYSTEM_SENDER, ringer.Name) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "name must not be "+SYSTEM_SENDER})
+		return
+	}
 	// get a database, try add this person to it
 	var db = GetConfig().Db.GetDb()
 	find := Bellringer{}
@@ -32,7 +40,13 @@ func HandleSendRequest(c *gin.Context) {
 	ringer.Token = GenToken()
 	fmt.Printf("ringer token %+v\n", ringer)
 	db.Create(&ringer)
+	systemMessage(ringer.Target, "New bellringer request", fmt.Sprintf("%s wants to send you notifications", ringer.Name))
 	ReplyToken(ringer.Token, c)
+}
+
+func systemMessage(target, title, msg string) {
+	// send message
+	sendMsgImpl(Message{Target: target, Title: title, Message: msg, Sender: SYSTEM_SENDER})
 }
 
 func HandleSenderAuth(handler GinHandler) func(*gin.Context) {
@@ -47,7 +61,7 @@ func HandleSenderAuth(handler GinHandler) func(*gin.Context) {
 		token := Bellringer{}
 		db.Where("token = ?", a).Find(&token)
 		if token.Name == "" {
-			c.JSON(http.StatusForbidden, gin.H{"error": "auth rejected"})
+			c.JSON(http.StatusForbidden, gin.H{"error": "auth does not exist"})
 			return
 		} else if token.RequestState == 0 {
 			c.JSON(http.StatusForbidden, gin.H{"error": "auth pending"})
@@ -57,6 +71,7 @@ func HandleSenderAuth(handler GinHandler) func(*gin.Context) {
 			return
 		}
 		c.Request.Header.Set("Target", token.Target)
+		c.Request.Header.Set("Sender", token.Name)
 		if token.Urgent {
 			c.Request.Header.Set("Urgent", "true")
 		}
@@ -96,7 +111,9 @@ func HandleSend(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "message target does not match authentication"})
 		return
 	}
+	msg.Sender = c.Request.Header.Get("Sender")
 	sendMsgImpl(msg)
+	c.JSON(http.StatusOK, gin.H{})
 }
 
 func sendMsgImpl(msg Message) {
@@ -108,11 +125,10 @@ func sendMsgImpl(msg Message) {
 	bells := []Bell{}
 	db.Where("\"user\" = ?", msg.Target).Find(&bells)
 	for _, bell := range bells {
-		fmt.Printf("Bell: %+v\n", bell)
 		if bell.Type == "ANDROID" {
-			PushAndroid(bell.Key, msg)
+			go PushAndroid(bell.Key, msg)
 		} else if bell.Type == "WEB" {
-			PushWeb(bell.Key, msg)
+			go PushWeb(bell.Key, msg)
 		}
 	}
 }

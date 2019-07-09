@@ -8,6 +8,7 @@ type Message struct {
 	Message string
 	Timestamp time.Time
 	Priority string
+	Sender string
 }
 
 type User struct {
@@ -23,7 +24,7 @@ type UserToken struct {
 }
 
 type Bell struct {
-	Id string
+	Id string // ignore clients but allow it to be returned
 	User string `json:"-"` // ignore clients
 	Name string
 	Type string
