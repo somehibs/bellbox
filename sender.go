@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -25,7 +26,7 @@ func HandleSendRequest(c *gin.Context) {
 		return
 	}
 	if strings.Compare(SYSTEM_SENDER, ringer.Name) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "name must not be "+SYSTEM_SENDER})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "name must not be " + SYSTEM_SENDER})
 		return
 	}
 	// get a database, try add this person to it
