@@ -7,17 +7,22 @@ import "net/http"
 import "strings"
 import "io/ioutil"
 
+type AndroidPush struct {
+	sender string
+	body string
+	title string
+	timestamp time.Time
+}
+
 func PushAndroid(token string, msg Message) {
 	if GetConfig().Push.Fcm == "" {
 		panic("Cannot continue - FCM key missing for Android push")
 	}
-	req := `{"to":"` + token + `", "data":{`
-	req += `"title": "` + msg.Title + `"`
-	if msg.Message != "" {
-		req += `,"body": "` + msg.Message + `"`
-	}
-	req += `,"sender": "` + msg.Sender + `"`
-	req += `}}`
+	req := `{"to":"` + token + `", "data":`
+	push := AndroidPush{msg.Sender, msg.Message, msg.Title, msg.Timestamp}
+	marshalledJson, err := json.Marshal(&push)
+	req += marshalledJson + "}"
+	fmt.Println("ABout to send: " + req)
 	r, err := http.NewRequest("POST", "https://fcm.googleapis.com/fcm/send", strings.NewReader(req))
 	if err != nil {
 		panic("cannot construct request")
