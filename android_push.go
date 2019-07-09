@@ -10,10 +10,10 @@ import (
 )
 
 type AndroidPush struct {
-	sender    string
-	body      string
-	title     string
-	timestamp time.Time
+	Sender    string    `json:"sender"`
+	Body      string    `json:"body"`
+	Title     string    `json:"title"`
+	Timestamp time.Time `json:"time"`
 }
 
 func PushAndroid(token string, msg Message) {
