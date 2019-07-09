@@ -102,6 +102,7 @@ func HandleSend(c *gin.Context) {
 func sendMsgImpl(msg Message) {
 	fmt.Printf("Sending message %+v\n", msg)
 	var db = GetConfig().Db.GetDb()
+	msg.Timestamp = time.Now()
 	db.Create(&msg)
 	// send to target bells
 	bells := []Bell{}

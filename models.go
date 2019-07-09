@@ -6,6 +6,7 @@ type Message struct {
 	Target string
 	Title string
 	Message string
+	Timestamp time.Time
 	Priority string
 }
 
@@ -18,7 +19,7 @@ type User struct {
 type UserToken struct {
 	User string
 	Token string
-	Timestamp time.Time `gorm:"type:time"`
+	Timestamp time.Time
 }
 
 type Bell struct {
