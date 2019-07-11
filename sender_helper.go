@@ -8,8 +8,11 @@ import (
 )
 
 type SenderAuth struct {
-	Name string
-	Keys map[string]string
+	// Map of sender names to sender single token auths
+	SingleSenders map[string]map[string]string
+	// bellbox server ip
+	Server string
+	CurrentSender string `json:""`
 }
 
 func check(err error) {
@@ -19,7 +22,7 @@ func check(err error) {
 }
 
 func LoadSenderAuth() SenderAuth {
-	auth := SenderAuth{"",map[string]string{}}
+	auth := SenderAuth{map[string]map[string]string{}, "", ""}
 	f, err := os.Open("bellbox_auth.json")
 	if err != nil {
 		fmt.Printf("file not exist?: %s\n", err)
@@ -47,44 +50,42 @@ func UpdateSenderAuth(auth SenderAuth) {
 	f.Close()
 }
 
-var auth SenderAuth
 var server string
 
-func StartSender(_name string, _server string) {
-	auth = LoadSenderAuth()
-	if auth.Name != "" && auth.Name != _name {
-		panic("config name doesn't match provided name - auth will no longer be valid")
+func StartSender(_name string, _server string) SenderAuth {
+	auth := LoadSenderAuth()
+	// Check if we've already got a sender by this name
+	auth.Server = _server
+	auth.CurrentSender = _name
+	if auth.SingleSenders[_name] == nil {
+		auth.SingleSenders[_name] = map[string]string{}
 	}
-	server = _server
-	auth.Name = _name
+	return auth
 }
 
-func checkSender() {
-	if server == "" {
+func (auth *SenderAuth) checkServer() {
+	if auth.Server == "" {
 		panic("Server url not set - call StartSender first")
 	}
-	if auth.Name == "" {
-		panic("Sender not set - call StartSender first")
-	}
 }
 
-func SingleTarget(targetName string) (string, error) {
-	checkSender()
+func (auth *SenderAuth) SingleTarget(targetName string) (string, error) {
+	auth.checkServer()
 	Log("Creating a single target.")
 	// connect to server, request target
-	if auth.Keys[targetName] != "" {
+	if auth.SingleSenders[auth.CurrentSender][targetName] != "" {
 		Log("Found existing key.")
-		return auth.Keys[targetName], nil
+		return auth.SingleSenders[auth.CurrentSender][targetName], nil
 	}
-	bellringer := Bellringer{targetName, auth.Name, "", false, 100}
+	bellringer := Bellringer{targetName, auth.CurrentSender, "", false, 100}
 	reply := UserReply{}
 	_, e := Post("", server+"/send/request", &bellringer, &reply)
 	if e != nil {
 		Log("Failed to request target.")
 		return "", e
 	}
-	auth.Keys[targetName] = reply.Token
-	UpdateSenderAuth(auth)
+	auth.SingleSenders[auth.CurrentSender][targetName] = reply.Token
+	UpdateSenderAuth(*auth)
 	Log("Request complete, token: " + reply.Token)
 	return reply.Token, nil
 }
