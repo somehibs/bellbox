@@ -3,6 +3,7 @@ package bellbox
 import (
 	"fmt"
 	"net/http"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -30,6 +31,7 @@ func HandleNewBell(c *gin.Context) {
 	bell.Enabled = true
 	db.Create(&bell)
 	c.JSON(http.StatusOK, bell)
+	systemMessage(authedUser, "Bell added", bell.Name+" has been added to your account.")
 }
 
 func HandleDeleteBell(c *gin.Context) {
@@ -51,6 +53,7 @@ func HandleDeleteBell(c *gin.Context) {
 		c.JSON(http.StatusConflict, gin.H{"error": "bell does not exist"})
 		return
 	}
+	systemMessage(authedUser, "Bell deleted", bell.Name+" has been deleted from your account.")
 	db.Where("id = ?", bellCheck.Id).Delete(Bell{})
 	c.JSON(http.StatusOK, gin.H{})
 }
