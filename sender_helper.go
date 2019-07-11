@@ -1,17 +1,17 @@
 package bellbox
 
 import (
-	"os"
 	"encoding/json"
-	"io/ioutil"
 	"fmt"
+	"io/ioutil"
+	"os"
 )
 
 type SenderAuth struct {
 	// Map of sender names to sender single token auths
 	SingleSenders map[string]map[string]string
 	// bellbox server ip
-	Server string
+	Server        string
 	CurrentSender string `json:""`
 }
 
@@ -50,8 +50,6 @@ func UpdateSenderAuth(auth SenderAuth) {
 	f.Close()
 }
 
-var server string
-
 func StartSender(_name string, _server string) SenderAuth {
 	auth := LoadSenderAuth()
 	// Check if we've already got a sender by this name
@@ -79,7 +77,7 @@ func (auth *SenderAuth) SingleTarget(targetName string) (string, error) {
 	}
 	bellringer := Bellringer{targetName, auth.CurrentSender, "", false, 100}
 	reply := UserReply{}
-	_, e := Post("", server+"/send/request", &bellringer, &reply)
+	_, e := Post("", auth.Server+"/send/request", &bellringer, &reply)
 	if e != nil {
 		Log("Failed to request target.")
 		return "", e
@@ -90,8 +88,9 @@ func (auth *SenderAuth) SingleTarget(targetName string) (string, error) {
 	return reply.Token, nil
 }
 
-func Send(target, targetToken, title, message string) error {
+func (auth *SenderAuth) Send(target, title, message string) error {
 	msg := Message{Title: title, Message: message, Target: target}
-	_, err := Post(targetToken, server+"/send", &msg, nil)
+	token := auth.SingleSenders[auth.CurrentSender][target]
+	_, err := Post(token, auth.Server+"/send", &msg, nil)
 	return err
 }
