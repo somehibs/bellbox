@@ -176,7 +176,8 @@ func HandleSendChange(c *gin.Context, enable bool) {
 		return
 	}
 	systemMessage(ringer.Target, fmt.Sprintf("Bellringer %s", actionName), fmt.Sprintf("Bellringer %s was %s", ringer.Name, actionName))
-	fmt.Printf("post update ringer: %+v\n", rr)
+	//fmt.Printf("post update ringer: %+v\n", rr)
+	c.JSON(http.StatusOK, gin.H{})
 }
 
 func HandleMapAuthorizations(c *gin.Context) {

@@ -1,0 +1,1 @@
+go build -o bellbox server/main.go && sudo systemctl stop bellbox && sudo cp bellbox /opt/bellbox/bin/ && sudo systemctl start bellbox
