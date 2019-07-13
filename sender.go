@@ -150,8 +150,9 @@ func HandleSendChange(c *gin.Context, enable bool) {
 	}
 	target := c.Request.Header.Get("UserId")
 	if ringer.Target != target {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "target does not match id"})
-		return
+		ringer.Target = target
+		//c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("target %s does not match id %s", ringer.Target, target)})
+		//return
 	}
 	db := GetConfig().Db.GetDb()
 	existingRinger := Bellringer{}
@@ -160,10 +161,12 @@ func HandleSendChange(c *gin.Context, enable bool) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "ringer does not exist"})
 		return
 	}
+	actionName := "allowed"
 	if enable {
 		existingRinger.RequestState = 1
 	} else {
 		existingRinger.RequestState = 2
+		actionName = "denied"
 	}
 	db.Table("bellringers").Where("target = ? AND name = ?", existingRinger.Target, existingRinger.Name).Update("request_state", existingRinger.RequestState)
 	rr := Bellringer{}
@@ -172,6 +175,7 @@ func HandleSendChange(c *gin.Context, enable bool) {
 		c.JSON(http.StatusConflict, gin.H{"error": "ringer not in expected state after transaction"})
 		return
 	}
+	systemMessage(ringer.Target, fmt.Sprintf("Bellringer %s", actionName), fmt.Sprintf("Bellringer %s was %s", ringer.Name, actionName))
 	fmt.Printf("post update ringer: %+v\n", rr)
 }
 
