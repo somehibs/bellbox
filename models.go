@@ -6,6 +6,7 @@ type Message struct {
 	Target string
 	Title string
 	Message string
+	Url string
 	Timestamp time.Time
 	Priority string
 	Sender string

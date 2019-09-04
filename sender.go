@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var SYSTEM_SENDER = "System"
+var SystemSender = "System"
 
 func HandleSendRequest(c *gin.Context) {
 	ringer := Bellringer{}
@@ -25,8 +25,8 @@ func HandleSendRequest(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "target does not exist"})
 		return
 	}
-	if strings.Compare(SYSTEM_SENDER, ringer.Name) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "name must not be " + SYSTEM_SENDER})
+	if strings.Compare(SystemSender, ringer.Name) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "name must not be " + SystemSender})
 		return
 	}
 	// get a database, try add this person to it
@@ -47,7 +47,7 @@ func HandleSendRequest(c *gin.Context) {
 
 func systemMessage(target, title, msg string) {
 	// send message
-	sendMsgImpl(Message{Target: target, Title: title, Message: msg, Sender: SYSTEM_SENDER})
+	sendMsgImpl(Message{Target: target, Title: title, Message: msg, Sender: SystemSender})
 }
 
 func HandleSenderAuth(handler GinHandler) func(*gin.Context) {
@@ -151,8 +151,6 @@ func HandleSendChange(c *gin.Context, enable bool) {
 	target := c.Request.Header.Get("UserId")
 	if ringer.Target != target {
 		ringer.Target = target
-		//c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("target %s does not match id %s", ringer.Target, target)})
-		//return
 	}
 	db := GetConfig().Db.GetDb()
 	existingRinger := Bellringer{}

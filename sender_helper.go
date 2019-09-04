@@ -88,8 +88,8 @@ func (auth *SenderAuth) SingleTarget(targetName string) (string, error) {
 	return reply.Token, nil
 }
 
-func (auth *SenderAuth) Send(target, title, message string) error {
-	msg := Message{Title: title, Message: message, Target: target}
+func (auth *SenderAuth) Send(target, title, message, url string) error {
+	msg := Message{Title: title, Message: message, Target: target, Url: url}
 	token := auth.SingleSenders[auth.CurrentSender][target]
 	_, err := Post(token, auth.Server+"/send", &msg, nil)
 	return err
