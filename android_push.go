@@ -2,8 +2,6 @@ package bellbox
 
 import (
 	"encoding/json"
-	"fmt"
-	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
@@ -14,6 +12,7 @@ type AndroidPush struct {
 	Body      string    `json:"body"`
 	Title     string    `json:"title"`
 	Timestamp time.Time `json:"time"`
+	Url       string    `json:"url"`
 }
 
 func PushAndroid(token string, msg Message) {
@@ -21,11 +20,9 @@ func PushAndroid(token string, msg Message) {
 		panic("Cannot continue - FCM key missing for Android push")
 	}
 	req := `{"to":"` + token + `", "data":`
-	push := AndroidPush{msg.Sender, msg.Message, msg.Title, msg.Timestamp}
+	push := AndroidPush{msg.Sender, msg.Message, msg.Title, msg.Timestamp, msg.Url}
 	marshalledJson, err := json.Marshal(&push)
 	req += string(marshalledJson) + "}"
-	fmt.Println("Requesting: " + req)
-	fmt.Println("fcm: " + GetConfig().Push.Fcm)
 	r, err := http.NewRequest("POST", "https://fcm.googleapis.com/fcm/send", strings.NewReader(req))
 	if err != nil {
 		panic("cannot construct request")
@@ -34,12 +31,9 @@ func PushAndroid(token string, msg Message) {
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Connection", "close")
 	c := http.Client{Timeout: time.Second * 5}
-	fmt.Printf("making req\n")
 	resp, err := c.Do(r)
 	if err != nil {
 		panic("could not do request")
 	}
-	fmt.Printf("reading resp\n")
-	body, _ := ioutil.ReadAll(resp.Body)
-	fmt.Printf("resp: %d body: %s", resp.StatusCode, body)
+	resp.Body.Close()
 }
