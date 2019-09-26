@@ -16,6 +16,10 @@ type AndroidPush struct {
 }
 
 func PushAndroid(token string, msg Message) {
+	PushAndroidImpl(token, msg, false)
+}
+
+func PushAndroidImpl(token string, msg Message, retry bool) {
 	if GetConfig().Push.Fcm == "" {
 		panic("Cannot continue - FCM key missing for Android push")
 	}
@@ -33,7 +37,12 @@ func PushAndroid(token string, msg Message) {
 	c := http.Client{Timeout: time.Second * 5}
 	resp, err := c.Do(r)
 	if err != nil {
-		panic("could not do request")
+		if retry {
+			panic("could not do request")
+		} else {
+			PushAndroidImpl(token, msg, true)
+			return
+		}
 	}
 	resp.Body.Close()
 }

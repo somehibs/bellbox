@@ -39,7 +39,6 @@ func HandleSendRequest(c *gin.Context) {
 	}
 	ringer.RequestState = 0
 	ringer.Token = GenToken()
-	fmt.Printf("ringer token %+v\n", ringer)
 	db.Create(&ringer)
 	systemMessage(ringer.Target, "New bellringer request", fmt.Sprintf("%s wants to send you notifications", ringer.Name))
 	ReplyToken(ringer.Token, c)
@@ -118,7 +117,7 @@ func HandleSend(c *gin.Context) {
 }
 
 func sendMsgImpl(msg Message) {
-	fmt.Printf("Sending message %+v\n", msg)
+	//fmt.Printf("Sending message %+v\n", msg)
 	var db = GetConfig().Db.GetDb()
 	msg.Timestamp = time.Now()
 	db.Create(&msg)
@@ -182,6 +181,6 @@ func HandleMapAuthorizations(c *gin.Context) {
 	user := c.Request.Header.Get("UserId")
 	ringerSlice := make([]Bellringer, 0)
 	db.Where("target = ?", user).Find(&ringerSlice)
-	fmt.Printf("ringers: %+v\n", ringerSlice)
+	//fmt.Printf("ringers: %+v\n", ringerSlice)
 	c.JSON(http.StatusOK, &ringerSlice)
 }

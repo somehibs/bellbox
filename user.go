@@ -2,9 +2,10 @@ package bellbox
 
 import (
 	"fmt"
-	"time"
-	"github.com/gin-gonic/gin"
 	"net/http"
+	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 func HandleNewUser(c *gin.Context) {
@@ -41,7 +42,7 @@ func UserExists(user string) bool {
 
 func NewToken(user string) string {
 	token := GenToken()
-	db.Create(&UserToken{User:user, Token:token, Timestamp: time.Now()})
+	db.Create(&UserToken{User: user, Token: token, Timestamp: time.Now()})
 	return token
 }
 
@@ -59,7 +60,7 @@ func HandleUserAuth(handler GinHandler) func(*gin.Context) {
 			c.JSON(http.StatusForbidden, gin.H{"error": "auth header not present"})
 			return
 		}
-		fmt.Println(a)
+		//fmt.Println(a)
 		db := GetConfig().Db.GetDb()
 		token := UserToken{}
 		db.Where("token = ?", a).Find(&token)
