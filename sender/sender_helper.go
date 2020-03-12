@@ -69,22 +69,18 @@ func (auth *SenderAuth) checkServer() {
 
 func (auth *SenderAuth) SingleTarget(targetName string) (string, error) {
 	auth.checkServer()
-	Log("Creating a single target.")
 	// connect to server, request target
 	if auth.SingleSenders[auth.CurrentSender][targetName] != "" {
-		Log("Found existing key.")
 		return auth.SingleSenders[auth.CurrentSender][targetName], nil
 	}
 	bellringer := Bellringer{targetName, auth.CurrentSender, "", false, 100}
 	reply := UserReply{}
 	_, e := Post("", auth.Server+"/send/request", &bellringer, &reply)
 	if e != nil {
-		Log("Failed to request target.")
 		return "", e
 	}
 	auth.SingleSenders[auth.CurrentSender][targetName] = reply.Token
 	UpdateSenderAuth(*auth)
-	Log("Request complete, token: " + reply.Token)
 	return reply.Token, nil
 }
 
